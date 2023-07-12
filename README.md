@@ -8,6 +8,10 @@ As to, "why do we need this service to connect to (for exmaple) IoT devices" - t
 ### How do I connect an IoT device to a TokenScript?
 The IoT device requires an ethereum private key. This can be issued by an external source (eg Web3j, ethers.js or even MetaMask) or internally by Web3E. Once issued we know the ethereum address corresponding to that private key. This address is the effective address of the device itself on the smart layer network (think of it like the device's URL).
 
+### Draft Implementation
+
+This repo holds the draft implementation for SmartLayer comms. Ultimately this server will be replaced with a distributed service where participants are rewarded for latency and availability. However this service will probably continue to run to support legacy builds.
+
 The device will initiate contact with the proxy server using a login packet. The server will issue a 16 byte SecureRandom challenge. The device signs that challenge and replies with the signature. The server now assigns the EC recovered address to the device address.
 
 Devices are communicated with via TokenScript by specifying the device address in the addressing call. Consider a simple IoT controlled door that can be unlocked using an NFT - this consists of two processes:
@@ -48,6 +52,98 @@ fetch(`${serverAddr}:8433/api/${iotAddr}/checkSignature?sig=${value}`)
 The IoT device now can perform ec-recover on the signature and check they hold the NFT which the device has been programmed to check for.
 
 For the [Espressif ESP32](https://www.espressif.com/en/products/socs/esp32) family of devices we have a Web3 library [Web3E](https://github.com/AlphaWallet/Web3E) which gives you the ability to call functions, send transactions and sign messages and in addition contains an easy to setup integration for the SmartLayer connection which handles login, authentication and API call shim.
+
+To implement on the ESP32 side (Assuming you are using PlatformIO):
+
+Include Web3E in your dependencies:
+
+```
+lib_deps =
+  # Using a library name
+  Web3E
+```
+
+Declare Globals:
+
+``` C++
+TcpBridge *tcpConnection;
+Web3 *web3;
+KeyID *keyID;
+```
+
+Set up Web3E in your setup (eg):
+
+``` C++
+Web3 *web3 = new Web3(SEPOLIA_ID);
+keyID = new KeyID(web3, DEVICE_PRIVATE_KEY); // Private key for this device if you are fixing it (easiest way).
+tcpConnection = new TcpBridge();
+tcpConnection->setKey(keyID, web3);
+tcpConnection->startConnection();
+```
+
+Now set up the API callback so you can act on received instructions from the any Token service (in this case a call from a TokenScript):
+
+``` C++
+enum APIRoutes
+{
+  api_unknown,
+  api_getChallenge,
+  api_checkSignature,
+  api_checkSignatureLock,
+  api_checkMarqueeSig,
+  api_end
+};
+
+std::map<std::string, APIRoutes> s_apiRoutes;
+
+void Initialize()
+{
+  s_apiRoutes["getChallenge"] = api_getChallenge;
+  s_apiRoutes["checkSignature"] = api_checkSignature;
+  s_apiRoutes["checkSignatureLock"] = api_checkSignatureLock;
+  s_apiRoutes["end"] = api_end;
+}
+
+// Callback to handle routes as they are called
+std::string handleTCPAPI(APIReturn* apiReturn)
+{
+  switch (s_apiRoutes[apiReturn->apiName])
+  {
+  case api_getChallenge:
+    Serial.println(currentChallenge.c_str());
+    udpBridge->sendResponse(currentChallenge, methodId);
+    break;
+  case api_checkSignature:
+  {
+    //EC-Recover address from signature and challenge
+    string address = Crypto::ECRecoverFromPersonalMessage(&apiReturn->params["sig"], &currentChallenge);  
+		//Check if this address has our entry token
+    boolean hasToken = QueryBalance(&address);
+    updateChallenge(); //generate a new challenge after each check
+    if (hasToken)
+    {
+      udpBridge->sendResponse("pass", methodId);
+      OpenDoor(); //Call your code that opens a door or performs the required 'pass' action
+    }
+    else
+    {
+      udpBridge->sendResponse("fail: doesn't have token", methodId);
+    }
+  }
+  break;
+}
+```
+
+And ensure the Bridge is called from your loop or from a thread:
+
+``` C++
+void loop()
+{
+...
+tcpConnection->checkClientAPI(&handleTCPAPI); //Pass in callback function so the TCP Bridge can call your API handler
+...
+}
+```
 
 There is a video on YouTube where I explain how the SmartLayer works with diagrams here: https://www.youtube.com/watch?v=WjuDTe8eik4
 

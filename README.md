@@ -5,12 +5,14 @@
 Similar services exist but lack the ability for permissionless setup, have at best static token authentication and integration is non-trivial. The default go-to is the excellent [Blynk](https://github.com/blynkkk). This is easy to use but as a proprietry solution it's not compatible with the premissionless style of operation required for our library.
 As to, "why do we need this service to connect to (for exmaple) IoT devices" - that is due to traversal of the NAT firewall an IoT device is inevitably behind. The IoT device must contact an external server in order to receive instructions.
 
+### How will it work?
+Ultimately the SmartLayer Proxy will run on the SmartLayer over a distributed service where participants are rewarded for latency and availability.
+
 ### How do I connect an IoT device to a TokenScript?
 The IoT device requires an ethereum private key. This can be issued by an external source (eg Web3j, ethers.js or even MetaMask) or internally by Web3E. Once issued we know the ethereum address corresponding to that private key. This address is the effective address of the device itself on the smart layer network (think of it like the device's URL).
 
 ### Draft Implementation
-
-This repo holds the draft implementation for SmartLayer comms. Ultimately this server will be replaced with a distributed service where participants are rewarded for latency and availability. However this service will probably continue to run to support legacy builds.
+This repo holds the draft implementation for SmartLayer comms and possibly serve for legacy devices.
 
 The device will initiate contact with the proxy server using a login packet. The server will issue a 16 byte SecureRandom challenge. The device signs that challenge and replies with the signature. The server now assigns the EC recovered address to the device address.
 

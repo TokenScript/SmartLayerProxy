@@ -47,4 +47,11 @@ fetch(`${serverAddr}:8433/api/${iotAddr}/checkSignature?sig=${value}`)
 
 The IoT device now can perform ec-recover on the signature and check they hold the NFT which the device has been programmed to check for.
 
-For the [Espressif ESP32](https://www.espressif.com/en/products/socs/esp32) family of devices we have a Web3 library [Web3E](https://github.com/AlphaWallet/Web3E) which contains an easy to setup integration for the SmartLayer connection which handles login, authentication and API call shim.
+For the [Espressif ESP32](https://www.espressif.com/en/products/socs/esp32) family of devices we have a Web3 library [Web3E](https://github.com/AlphaWallet/Web3E) which gives you the ability to call functions, send transactions and sign messages and in addition contains an easy to setup integration for the SmartLayer connection which handles login, authentication and API call shim.
+
+There is a video on YouTube where I explain how the SmartLayer works with diagrams here: https://www.youtube.com/watch?v=WjuDTe8eik4
+
+This video is out of date now as the system is much improved since then.
+
+We have also used this technology to create a NFT chat board, where people with the same NFT collection can chat about what's happening. The boards are public but the users are required to prove they own an NFT in the collection in order to post messages.
+

@@ -1,7 +1,7 @@
 # SmartLayerProxy
 ## A universal, authenticated proxy for safely connecting TokenScript to remote services
 
-### Why is this needed? Don't we already have things like this?
+### Why is this needed?
 Similar services exist but lack the ability for permissionless setup, have at best static token authentication and integration is non-trivial. The default go-to is the excellent [Blynk](https://github.com/blynkkk). This is easy to use but as a proprietry solution it's not compatible with the premissionless style of operation required for our library.
 As to, "why do we need this service to connect to (for exmaple) IoT devices" - that is due to traversal of the NAT firewall an IoT device is inevitably behind. The IoT device must contact an external server in order to receive instructions.
 

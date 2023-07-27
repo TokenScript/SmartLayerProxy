@@ -7,6 +7,7 @@ import org.springframework.util.MultiValueMap;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -16,10 +17,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.stl.smartlayer.APIController.IOT_PORT;
 
 
 @Service
@@ -29,9 +29,6 @@ public class ASyncService
     private Map<BigInteger, UDPClientInstance> tokenToClient = new ConcurrentHashMap<>();
     private Map<String, List<UDPClientInstance>> addressToClient = new ConcurrentHashMap<>();
     private Map<String, Integer> IoTAddrToQueryID = new ConcurrentHashMap<>();
-
-    private final static int UDP_PORT = IOT_PORT;
-    private final static int UDP_TOP_PORT = IOT_PORT;
     private final static long CONNECTION_CLEANUP_TIME = 5L * 60L * 1000L; //after 5 minutes of silence remove a connection
 
     private UDPClientInstance getLatestClient(String ethAddress)
@@ -43,18 +40,21 @@ public class ASyncService
 
     public ASyncService()
     {
+        Properties props = loadProperties();
         InetAddress addr = null;
         try
         {
-            addr = InetAddress.getByName("122.9.138.228");
+            addr = InetAddress.getByName("scriptproxy.smarttokenlabs.com");
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
 
+        int IOT_PORT = Integer.parseInt((String)props.get("iot.port"));
+
         udpClients = new ArrayList<>();
-        for (int port = UDP_PORT; port <= UDP_TOP_PORT; port++)
+        for (int port = IOT_PORT; port <= IOT_PORT; port++)
         {
             try
             {
@@ -280,6 +280,18 @@ public class ASyncService
         if (++val > 256) val = 0;
         IoTAddrToQueryID.put(ethAddress, val);
         return val;
+    }
+
+    private Properties loadProperties () {
+        Properties p = new Properties();
+        try {
+            InputStream inputStream =
+                    getClass().getClassLoader().getResourceAsStream("application.properties");
+            p.load(inputStream);
+        } catch (IOException e) {
+            //
+        }
+        return p;
     }
 }
 

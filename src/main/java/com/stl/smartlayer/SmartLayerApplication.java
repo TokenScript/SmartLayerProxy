@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class SmartLayer2Application {
+public class SmartLayerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SmartLayer2Application.class, args);
+        SpringApplication.run(SmartLayerApplication.class, args);
     }
 
     @Bean

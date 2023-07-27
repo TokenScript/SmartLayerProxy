@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/api")
 public class APIController {
     private static final int CHECK_CONNECTION_INTERVAL = 1; //check for timeouts once per minute
-    public static final int IOT_PORT = 8003;
 
     private static class APIData {
         public String fullApiCall;

@@ -10,6 +10,7 @@ import org.web3j.crypto.Sign;
 import org.web3j.utils.Numeric;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -17,13 +18,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
-
-import static com.stl.smartlayer.APIController.IOT_PORT;
 
 @Service
 public class ASyncTCPService extends Thread implements TCPCallback
@@ -43,6 +39,8 @@ public class ASyncTCPService extends Thread implements TCPCallback
     @Override
     public void run()
     {
+        Properties props = loadProperties();
+        int IOT_PORT = Integer.parseInt((String)props.get("iot.port"));
 
         Observable.interval(1, 2, TimeUnit.MINUTES)
                 .doOnNext(l -> sendKeepAlive()).subscribe();
@@ -288,5 +286,17 @@ public class ASyncTCPService extends Thread implements TCPCallback
         }
 
         return CompletableFuture.completedFuture(sb.toString());
+    }
+
+    private Properties loadProperties () {
+        Properties p = new Properties();
+        try {
+            InputStream inputStream =
+                    getClass().getClassLoader().getResourceAsStream("application.properties");
+            p.load(inputStream);
+        } catch (IOException e) {
+            //
+        }
+        return p;
     }
 }

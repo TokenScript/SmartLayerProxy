@@ -114,4 +114,14 @@ public class APIController {
 
         return new ResponseEntity<>(returnAddrs, HttpStatus.CREATED);
     }
+
+    @CrossOrigin(origins = {"*"}, maxAge = 10000, allowCredentials = "false")
+    @RequestMapping(value = "smartpass/{attestation}", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity pushCheck(@PathVariable("attestation") String address,
+                                    HttpServletRequest request) throws InterruptedException, ExecutionException, IOException
+    {
+        String response = "{ quests: 4, points: 450, level: 1 }";
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 }
